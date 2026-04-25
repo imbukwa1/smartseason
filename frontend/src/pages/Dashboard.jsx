@@ -40,9 +40,36 @@ function formatDate(value) {
 
 function toFieldPayload(form) {
   return {
-    ...form,
+    name: form.name.trim(),
+    crop_type: form.crop_type.trim(),
+    planting_date: form.planting_date,
+    stage: form.stage,
     assigned_agent: form.assigned_agent ? Number(form.assigned_agent) : null,
   };
+}
+
+function getApiErrorMessage(error, fallback) {
+  const data = error?.response?.data;
+
+  if (!data) {
+    return fallback;
+  }
+
+  if (typeof data === "string") {
+    return data;
+  }
+
+  if (data.detail) {
+    return data.detail;
+  }
+
+  const firstFieldError = Object.entries(data).find(([, value]) => value?.length);
+  if (firstFieldError) {
+    const [field, messages] = firstFieldError;
+    return `${field}: ${Array.isArray(messages) ? messages.join(" ") : messages}`;
+  }
+
+  return fallback;
 }
 
 function fieldToForm(field) {
@@ -216,13 +243,23 @@ function Dashboard() {
     event.preventDefault();
     setError("");
 
+    let createdField = null;
+
     try {
-      await api.post("/fields/", toFieldPayload(newForm));
+      const { data } = await api.post("/fields/", toFieldPayload(newForm));
+      createdField = data;
       setNewForm(emptyFieldForm);
       setShowNewField(false);
+    } catch (apiError) {
+      setError(getApiErrorMessage(apiError, "Unable to create field."));
+      return;
+    }
+
+    try {
       await refreshAfterChange();
-    } catch {
-      setError("Unable to create field.");
+    } catch (apiError) {
+      setFields((current) => [createdField, ...current]);
+      setError(getApiErrorMessage(apiError, "Field created, but dashboard refresh failed."));
     }
   }
 
