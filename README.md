@@ -2,8 +2,6 @@
 
 A simple web application for tracking crop progress across multiple fields during a growing season.
 
----
-
 ## Table of Contents
 
 - [Demo Credentials](#demo-credentials)
@@ -15,16 +13,13 @@ A simple web application for tracking crop progress across multiple fields durin
 - [Assumptions](#assumptions)
 - [What I Would Improve](#what-i-would-improve)
 
----
+
 
 ## Demo Credentials
 
-| Role        | Email                      | Password   |
-|-------------|----------------------------|------------|
-| Admin       | admin@smartseason.com      | admin123   |
-| Field Agent | agent@smartseason.com      | agent123   |
+Admin - admin@smartseason.com - admin123
+field agent - agent@smartseason.com - agent123
 
----
 
 ## Tech Stack
 
@@ -38,7 +33,6 @@ A simple web application for tracking crop progress across multiple fields durin
  Routing    React Router v6                   
  Styling    Plain CSS                         
 
----
 
 ## Local Setup
 
@@ -51,7 +45,6 @@ Make sure you have these installed:
 - PostgreSQL 14+
 - Git
 
----
 
 ### 1. Clone the Repository
 
@@ -60,7 +53,6 @@ git clone https://github.com/imbukwa1/smartseason.git
 cd smartseason
 ```
 
----
 
 ### 2. Backend Setup
 
@@ -126,7 +118,7 @@ python manage.py runserver
 
 Backend runs at: `http://localhost:8000`
 
----
+
 
 ### 3. Frontend Setup
 
@@ -164,13 +156,11 @@ Frontend runs at: `http://localhost:5173`
 - Log in with the demo credentials above
 - Admin sees all fields; Agent sees only assigned fields
 
----
 
 ## Deployment Guide
 
 This guide deploys the backend to **Railway** (free tier) and the frontend to **Vercel** (free tier). Both are beginner-friendly and require no server management.
 
----
 
 ### Deploy the Backend (Railway)
 
@@ -233,7 +223,6 @@ python manage.py seed_demo_users
 
 Your backend is now live at: `https://your-app.up.railway.app`
 
----
 
 ### Deploy the Frontend (Vercel)
 
@@ -262,7 +251,6 @@ Click **Deploy**. Vercel builds and deploys automatically.
 
 Your frontend is now live at: `https://your-app.vercel.app`
 
----
 
 ### After Deployment Checklist
 
@@ -272,7 +260,6 @@ Your frontend is now live at: `https://your-app.vercel.app`
 - [ ] Agent dashboard shows only assigned fields
 - [ ] Field updates save correctly
 
----
 
 ## Design Decisions
 
@@ -298,7 +285,6 @@ The UI uses plain CSS only. The requirements explicitly state "simple, intuitive
 
 Frontend and backend live in the same repository for easier review and deployment coordination. They are independently deployable.
 
----
 
 ## Field Status Logic
 
@@ -312,7 +298,6 @@ Each field has a computed `status` property based on its current data:
 
 **Rationale:** A field that was planted over 30 days ago but hasn't progressed past `planted` is likely delayed or neglected — flagging it as `at_risk` gives the admin early visibility. The 30-day threshold is a reasonable general assumption; in a real system, this would be crop-type-specific and configurable.
 
----
 
 ## Assumptions
 
@@ -320,9 +305,8 @@ Each field has a computed `status` property based on its current data:
 - Field agents cannot create or delete fields — only admins manage the field registry.
 - The "At Risk" threshold (30 days in `planted` stage) is a fixed business rule for this version.
 - Email is used as the login identifier for clarity, though Django's default `username` field is kept.
-- No email verification or password reset is implemented — out of scope for this assessment.
+- No email verification or password reset is implemented.
 
----
 
 ## What I Would Improve
 
