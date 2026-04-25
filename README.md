@@ -252,15 +252,6 @@ Click **Deploy**. Vercel builds and deploys automatically.
 Your frontend is now live at: `https://your-app.vercel.app`
 
 
-### After Deployment Checklist
-
-- [ ] Backend health check works: `GET https://your-railway-app.up.railway.app/api/health/`
-- [ ] Login works with demo credentials on the live URL
-- [ ] Admin dashboard loads all fields
-- [ ] Agent dashboard shows only assigned fields
-- [ ] Field updates save correctly
-
-
 ## Design Decisions
 
 ### Role-Based Access
