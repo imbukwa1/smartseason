@@ -307,5 +307,4 @@ With more time, I would:
 2. **Photo uploads on field updates** — agents could attach images from the field
 3. **Notifications** — alert admins when a field becomes "at risk"
 4. **Pagination** — for farms with hundreds of fields, the current list views would need it
-5. **httpOnly cookie auth** — more secure than localStorage for JWT tokens
-6. **Test coverage** — unit tests for status logic and API permission checks at minimum
+5. **Test coverage** — unit tests for status logic and API permission checks at minimum
