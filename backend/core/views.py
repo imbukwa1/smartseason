@@ -14,6 +14,7 @@ from .permissions import IsAdmin
 from .serializers import (
     EmailTokenObtainPairSerializer,
     AgentSerializer,
+    FieldDetailSerializer,
     FieldSerializer,
     FieldUpdateSerializer,
 )
@@ -62,6 +63,11 @@ def agents(request):
 class FieldViewSet(ModelViewSet):
     serializer_class = FieldSerializer
 
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return FieldDetailSerializer
+        return super().get_serializer_class()
+
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsAdmin()]
@@ -69,7 +75,11 @@ class FieldViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Field.objects.select_related("assigned_agent").order_by("-created_at")
+        queryset = (
+            Field.objects.select_related("assigned_agent")
+            .prefetch_related("updates__agent")
+            .order_by("-created_at")
+        )
 
         if user.role == User.Role.ADMIN:
             return queryset

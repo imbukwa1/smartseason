@@ -228,14 +228,11 @@ function Dashboard() {
     await loadDashboard();
 
     if (fieldId) {
-      const [fieldResponse, updatesResponse] = await Promise.all([
-        api.get(`/fields/${fieldId}/`),
-        api.get(`/fields/${fieldId}/updates/`),
-      ]);
+      const { data: fieldData } = await api.get(`/fields/${fieldId}/`);
 
-      setSelectedField(fieldResponse.data);
-      setEditForm(fieldToForm(fieldResponse.data));
-      setSelectedUpdates(updatesResponse.data);
+      setSelectedField(fieldData);
+      setEditForm(fieldToForm(fieldData));
+      setSelectedUpdates(fieldData.updates ?? []);
     }
   }
 
@@ -268,16 +265,13 @@ function Dashboard() {
     setDetailLoading(true);
 
     try {
-      const [fieldResponse, updatesResponse] = await Promise.all([
-        api.get(`/fields/${field.id}/`),
-        api.get(`/fields/${field.id}/updates/`),
-      ]);
+      const { data: fieldData } = await api.get(`/fields/${field.id}/`);
 
-      setSelectedField(fieldResponse.data);
-      setEditForm(fieldToForm(fieldResponse.data));
-      setSelectedUpdates(updatesResponse.data);
-    } catch {
-      setError("Unable to load field details.");
+      setSelectedField(fieldData);
+      setEditForm(fieldToForm(fieldData));
+      setSelectedUpdates(fieldData.updates ?? []);
+    } catch (apiError) {
+      setError(getApiErrorMessage(apiError, "Unable to load field details."));
     } finally {
       setDetailLoading(false);
     }

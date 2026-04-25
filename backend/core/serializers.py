@@ -75,6 +75,13 @@ class FieldUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "field", "agent", "created_at"]
 
 
+class FieldDetailSerializer(FieldSerializer):
+    updates = FieldUpdateSerializer(many=True, read_only=True)
+
+    class Meta(FieldSerializer.Meta):
+        fields = FieldSerializer.Meta.fields + ["updates"]
+
+
 class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

@@ -1,13 +1,13 @@
 from datetime import timedelta
 
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 from rest_framework.test import APIRequestFactory
 
 from .dashboard import build_dashboard_payload
 from .models import Field, FieldUpdate, User
 from .permissions import IsAdmin
-from .serializers import FieldSerializer, FieldUpdateSerializer
+from .serializers import FieldDetailSerializer, FieldSerializer, FieldUpdateSerializer
 from .views import FieldViewSet
 
 
@@ -90,6 +90,34 @@ class FieldUpdateSerializerTests(SimpleTestCase):
 
         self.assertFalse(serializer.is_valid())
         self.assertIn("new_stage", serializer.errors)
+
+
+class FieldDetailSerializerTests(TestCase):
+    def test_field_detail_includes_updates(self):
+        agent = User.objects.create_user(
+            username="agent",
+            password="agent123",
+            role=User.Role.AGENT,
+        )
+        field = Field.objects.create(
+            name="North Field",
+            crop_type="Maize",
+            planting_date=timezone.localdate(),
+            stage=Field.Stage.GROWING,
+            assigned_agent=agent,
+        )
+        FieldUpdate.objects.create(
+            field=field,
+            agent=agent,
+            new_stage=Field.Stage.GROWING,
+            notes="Crop is healthy.",
+        )
+
+        data = FieldDetailSerializer(field).data
+
+        self.assertEqual(data["status"], "active")
+        self.assertEqual(data["assigned_agent"], agent.id)
+        self.assertEqual(data["updates"][0]["notes"], "Crop is healthy.")
 
 
 class FieldUpdateAccessTests(SimpleTestCase):
