@@ -2,13 +2,135 @@ from datetime import timedelta
 
 from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIClient, APIRequestFactory
 
 from .dashboard import build_dashboard_payload
 from .models import Field, FieldUpdate, User
 from .permissions import IsAdmin
 from .serializers import FieldDetailSerializer, FieldSerializer, FieldUpdateSerializer
 from .views import FieldViewSet
+
+
+class AuthenticationApiTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_register_creates_field_agent_with_hashed_password(self):
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "first_name": "Amina",
+                "last_name": "Otieno",
+                "email": "Amina.Agent@example.com",
+                "password": "Harvest2026",
+                "confirm_password": "Harvest2026",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertIn("access", response.data)
+        user = User.objects.get(email="amina.agent@example.com")
+        self.assertEqual(user.first_name, "Amina")
+        self.assertEqual(user.last_name, "Otieno")
+        self.assertEqual(user.username, "amina.agent@example.com")
+        self.assertEqual(user.role, User.Role.AGENT)
+        self.assertTrue(user.check_password("Harvest2026"))
+        self.assertNotEqual(user.password, "Harvest2026")
+
+    def test_register_rejects_duplicate_email(self):
+        User.objects.create_user(
+            username="agent@example.com",
+            email="agent@example.com",
+            password="Harvest2026",
+            role=User.Role.AGENT,
+        )
+
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "first_name": "New",
+                "last_name": "Agent",
+                "email": "AGENT@example.com",
+                "password": "Harvest2026",
+                "confirm_password": "Harvest2026",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("email", response.data)
+
+    def test_register_validates_password_requirements(self):
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "first_name": "New",
+                "last_name": "Agent",
+                "email": "new@example.com",
+                "password": "short",
+                "confirm_password": "short",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("password", response.data)
+
+    def test_login_allows_registered_user_by_email(self):
+        User.objects.create_user(
+            username="agent@example.com",
+            email="agent@example.com",
+            password="Harvest2026",
+            role=User.Role.AGENT,
+        )
+
+        response = self.client.post(
+            "/api/auth/login/",
+            {"email": "agent@example.com", "password": "Harvest2026"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertIn("access", response.data)
+
+    def test_login_returns_specific_errors(self):
+        User.objects.create_user(
+            username="agent@example.com",
+            email="agent@example.com",
+            password="Harvest2026",
+            role=User.Role.AGENT,
+        )
+        inactive_user = User.objects.create_user(
+            username="inactive@example.com",
+            email="inactive@example.com",
+            password="Harvest2026",
+            role=User.Role.AGENT,
+            is_active=False,
+        )
+
+        invalid_email = self.client.post(
+            "/api/auth/login/",
+            {"email": "missing@example.com", "password": "Harvest2026"},
+            format="json",
+        )
+        incorrect_password = self.client.post(
+            "/api/auth/login/",
+            {"email": "agent@example.com", "password": "WrongPass2026"},
+            format="json",
+        )
+        inactive = self.client.post(
+            "/api/auth/login/",
+            {"email": inactive_user.email, "password": "Harvest2026"},
+            format="json",
+        )
+
+        self.assertEqual(invalid_email.status_code, 400)
+        self.assertIn("email", invalid_email.data)
+        self.assertEqual(incorrect_password.status_code, 400)
+        self.assertIn("password", incorrect_password.data)
+        self.assertEqual(inactive.status_code, 400)
+        self.assertIn("email", inactive.data)
 
 
 class FieldStatusTests(SimpleTestCase):

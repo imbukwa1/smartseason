@@ -3,9 +3,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .dashboard import build_dashboard_payload
@@ -17,11 +18,35 @@ from .serializers import (
     FieldDetailSerializer,
     FieldSerializer,
     FieldUpdateSerializer,
+    UserRegistrationSerializer,
 )
 
 
 class LoginView(TokenObtainPairView):
     serializer_class = EmailTokenObtainPairSerializer
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def register(request):
+    serializer = UserRegistrationSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.save()
+    refresh = RefreshToken.for_user(user)
+
+    return Response(
+        {
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role,
+            },
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        },
+        status=201,
+    )
 
 
 @api_view(["GET"])

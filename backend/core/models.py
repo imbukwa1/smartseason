@@ -11,7 +11,8 @@ class User(AbstractUser):
         ADMIN = "admin", "Admin"
         AGENT = "agent", "Agent"
 
-    role = models.CharField(max_length=20, choices=Role.choices)
+    email = models.EmailField(unique=True)
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.AGENT)
 
     def __str__(self):
         return self.get_username()

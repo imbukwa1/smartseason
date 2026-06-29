@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -25,8 +25,11 @@ function Login() {
       navigate(currentUser.role === "admin" ? "/dashboard" : "/my-fields", {
         replace: true,
       });
-    } catch {
-      setError("Invalid email or password.");
+    } catch (loginError) {
+      const data = loginError.response?.data;
+      const message =
+        data && typeof data !== "string" ? Object.values(data).flat()[0] : data;
+      setError(message || "Invalid email or password.");
     } finally {
       setSubmitting(false);
     }
@@ -67,6 +70,10 @@ function Login() {
         <button disabled={submitting} type="submit">
           {submitting ? "Signing in..." : "Sign in"}
         </button>
+
+        <p className="auth-switch">
+          New to SmartSeason? <Link to="/register">Create an account</Link>
+        </p>
       </form>
     </main>
   );

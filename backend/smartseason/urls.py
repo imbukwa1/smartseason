@@ -3,7 +3,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from core.views import FieldViewSet, LoginView, agents, dashboard, me
+from core.views import FieldViewSet, LoginView, agents, dashboard, me, register
 from .views import health_check
 
 
@@ -13,6 +13,7 @@ router.register("fields", FieldViewSet, basename="field")
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health/", health_check, name="health-check"),
+    path("api/auth/register/", register, name="auth-register"),
     path("api/auth/login/", LoginView.as_view(), name="auth-login"),
     path("api/auth/refresh/", TokenRefreshView.as_view(), name="auth-refresh"),
     path("api/auth/me/", me, name="auth-me"),

@@ -57,6 +57,18 @@ export function AuthProvider({ children }) {
     return currentUser;
   }
 
+  async function register(payload) {
+    const { data } = await api.post("/auth/register/", payload);
+
+    localStorage.setItem("accessToken", data.access);
+    localStorage.setItem("refreshToken", data.refresh);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    setToken(data.access);
+    setUser(data.user);
+
+    return data.user;
+  }
+
   function logout() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
@@ -74,6 +86,7 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(token),
       login,
       logout,
+      register,
     }),
     [user, token, loading],
   );
